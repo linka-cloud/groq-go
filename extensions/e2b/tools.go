@@ -172,7 +172,7 @@ var (
 	}
 	mkdirTool = tools.Tool{
 		Type: tools.ToolTypeFunction,
-		Function: tools.FunctionDefinition{
+		Function: &tools.FunctionDefinition{
 			Name:        "mkdir",
 			Description: "Make a directory in the sandbox file system at a given path",
 			Parameters: tools.FunctionParameters{
@@ -190,7 +190,7 @@ var (
 	}
 	lsTool = tools.Tool{
 		Type: tools.ToolTypeFunction,
-		Function: tools.FunctionDefinition{
+		Function: &tools.FunctionDefinition{
 			Name:        "ls",
 			Description: "List the files and directories in the sandbox file system at a given path",
 			Parameters: tools.FunctionParameters{
@@ -207,7 +207,7 @@ var (
 	}
 	readTool = tools.Tool{
 		Type: tools.ToolTypeFunction,
-		Function: tools.FunctionDefinition{
+		Function: &tools.FunctionDefinition{
 			Name:        "read",
 			Description: "Read the contents of a file in the sandbox file system at a given path",
 			Parameters: tools.FunctionParameters{
@@ -224,7 +224,7 @@ var (
 	}
 	writeTool = tools.Tool{
 		Type: tools.ToolTypeFunction,
-		Function: tools.FunctionDefinition{
+		Function: &tools.FunctionDefinition{
 			Name:        "write",
 			Description: "Write to a file in the sandbox file system at a given path",
 			Parameters: tools.FunctionParameters{
@@ -244,7 +244,7 @@ var (
 	}
 	startProcessTool = tools.Tool{
 		Type: tools.ToolTypeFunction,
-		Function: tools.FunctionDefinition{
+		Function: &tools.FunctionDefinition{
 			Name:        "start_process",
 			Description: "Start a process in the sandbox.",
 			Parameters: tools.FunctionParameters{

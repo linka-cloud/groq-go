@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/conneroisu/groq-go"
+	"github.com/conneroisu/groq-go/pkg/tools"
 )
 
 var (
@@ -75,25 +76,46 @@ func input(
 		Role:    groq.RoleUser,
 		Content: strings.Join(lines, "\n"),
 	})
+	reasoningEffort := groq.ReasoningEffortMedium
 	output, err := client.ChatCompletionStream(
 		ctx,
 		groq.ChatCompletionRequest{
-			Model:     groq.ModelGemma29BIt,
-			Messages:  history,
-			MaxTokens: 2000,
+			Model:           groq.ModelOpenaiGptOss20B,
+			Messages:        history,
+			MaxTokens:       2000,
+			ReasoningEffort: &reasoningEffort,
+			Tools:           []tools.Tool{tools.BuiltIn.BrowserSearch},
 		},
 	)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(writer, "\nai: ")
+	var reasoning bool
 	for {
 		response, err := output.Recv()
 		if err != nil {
 			return err
 		}
+		for _, v := range response.Choices[0].Delta.ExecutedTools {
+			if v.Output == nil {
+				continue
+			}
+			fmt.Fprintf(writer, "\n%s:\n", v.Type)
+			fmt.Fprintf(writer, "  input: %s\n", string(v.Arguments))
+			fmt.Fprintf(writer, "  output: %s\n\n", *v.Output)
+		}
 		if response.Choices[0].FinishReason == groq.ReasonStop {
+			fmt.Fprintln(writer)
 			break
+		}
+		if !reasoning && response.Choices[0].Delta.Reasoning != "" {
+			fmt.Fprintln(writer, "\nreasoning: ")
+			reasoning = true
+		}
+		fmt.Fprint(writer, response.Choices[0].Delta.Reasoning)
+		if reasoning && response.Choices[0].Delta.Content != "" {
+			reasoning = false
+			fmt.Fprintln(writer, "\n\nresponse: ")
 		}
 		fmt.Fprint(writer, response.Choices[0].Delta.Content)
 	}

@@ -44,6 +44,33 @@ const (
 	FormatVerboseJSON Format = "verbose_json"
 )
 
+// ReasoningEffort specifies the level of reasoning effort the model should apply.
+type ReasoningEffort string
+
+const (
+	// ReasoningEffortNone disables reasoning.
+	ReasoningEffortNone ReasoningEffort = "none"
+	// ReasoningEffortDefault lets the model reason.
+	ReasoningEffortDefault ReasoningEffort = "default"
+	// ReasoningEffortLow sets low reasoning effort.
+	ReasoningEffortLow ReasoningEffort = "low"
+	// ReasoningEffortMedium sets medium reasoning effort.
+	ReasoningEffortMedium ReasoningEffort = "medium"
+	// ReasoningEffortHigh sets high reasoning effort.
+	ReasoningEffortHigh ReasoningEffort = "high"
+)
+
+type ReasoningFormat string
+
+const (
+	// ReasoningFormatHidden hides reasoning tokens.
+	ReasoningFormatHidden ReasoningFormat = "hidden"
+	// ReasoningFormatRaw outputs raw reasoning tokens.
+	ReasoningFormatRaw ReasoningFormat = "raw"
+	// ReasoningFormatParsed outputs parsed reasoning tokens.
+	ReasoningFormatParsed ReasoningFormat = "parsed"
+)
+
 // # [Chat](https://console.groq.com/docs/api-reference#chat-create)
 
 // ChatCompletionRequest represents a request structure for the chat
@@ -106,6 +133,20 @@ type (
 		ParallelToolCalls any `json:"parallel_tool_calls,omitempty"`
 		// RetryDelay is the delay between retries.
 		RetryDelay time.Duration `json:"-"`
+		// Specifies the level of reasoning effort the model should apply.
+		// qwen3 models support the following values Set to 'none' to disable reasoning.
+		// Set to 'default' or null to let Qwen reason.
+		// openai/gpt-oss-20b and openai/gpt-oss-120b support 'low', 'medium', or 'high'.
+		// 'medium' is the default value.
+		ReasoningEffort *ReasoningEffort `json:"reasoning_effort,omitempty"`
+		// IncludeReasoning set whether to include reasoning in the response. If true, the response will include
+		// a `reasoning` field. If false, the model's reasoning will not be included in the
+		// response. This field is mutually exclusive with `reasoning_format`.
+		IncludeReasoning *bool `json:"include_reasoning,omitempty"`
+		// ReasoningFormat specifies how to output reasoning tokens.
+		// Specifies how to output reasoning tokens This field is mutually exclusive with
+		// `include_reasoning`.
+		ReasoningFormat *ReasoningFormat `json:"reasoning_format,omitempty"`
 	}
 	// ChatCompletionResponse represents a response structure for chat
 	// completion API.
@@ -274,6 +315,10 @@ type (
 		FunctionCall *tools.FunctionCall `json:"function_call,omitempty"`
 		// ToolCalls are the tool calls of the response.
 		ToolCalls []tools.ToolCall `json:"tool_calls,omitempty"`
+		// Reasoning is the model's reasoning for a response.
+		Reasoning string `json:"reasoning,omitempty"`
+		// ExecutedTools is the list of tools that were executed during the chat completion for compound AI systems.
+		ExecutedTools []ExecutedTool `json:"executed_tools,omitempty"`
 	}
 	// ChatCompletionStreamChoice represents a response structure for chat
 	// completion API.
@@ -753,3 +798,178 @@ func audioMultipartForm(request AudioRequest, b builders.FormBuilder) error {
 	}
 	return b.Close()
 }
+
+// ExecutedTool mirrors the TypeScript ExecutedTool interface.
+type (
+	ExecutedTool struct {
+		// The arguments passed to the tool in JSON format (as a string).
+		Arguments json.RawMessage `json:"arguments"`
+
+		// The index of the executed tool.
+		Index int `json:"index"`
+
+		// The type of tool that was executed.
+		Type string `json:"type"`
+
+		// Array of browser results.
+		BrowserResults []BrowserResult `json:"browser_results,omitempty"`
+
+		// Array of code execution results.
+		CodeResults []CodeResult `json:"code_results,omitempty"`
+
+		// The output returned by the tool.
+		Output *string `json:"output,omitempty"`
+
+		// The search results returned by the tool, if applicable.
+		SearchResults *SearchResults `json:"search_results,omitempty"`
+	}
+
+	BrowserResult struct {
+		// The title of the browser window.
+		Title string `json:"title"`
+
+		// The URL of the browser window.
+		URL string `json:"url"`
+
+		// The content of the browser result.
+		Content *string `json:"content,omitempty"`
+
+		// The live view URL for the browser window.
+		LiveViewURL *string `json:"live_view_url,omitempty"`
+	}
+
+	// CodeResult represents outputs from code execution.
+	CodeResult struct {
+		// A single chart (when not a superchart).
+		Chart *Chart `json:"chart,omitempty"`
+
+		// Charts from a superchart.
+		Charts []Chart `json:"charts,omitempty"`
+
+		// Base64 encoded PNG image output from code execution.
+		PNG *string `json:"png,omitempty"`
+
+		// The text version of the code execution result.
+		Text *string `json:"text,omitempty"`
+	}
+
+	// SearchResults corresponds to ExecutedTool.SearchResults.
+	SearchResults struct {
+		// List of image URLs returned by the search.
+		Images []string `json:"images,omitempty"`
+
+		// List of search results.
+		Results []SearchResult `json:"results,omitempty"`
+	}
+
+	// SearchResult represents a single search result.
+	SearchResult struct {
+		// The content of the search result.
+		Content *string `json:"content,omitempty"`
+
+		// The relevance score of the search result.
+		Score *float64 `json:"score,omitempty"`
+
+		// The title of the search result.
+		Title *string `json:"title,omitempty"`
+
+		// The URL of the search result.
+		URL *string `json:"url,omitempty"`
+	}
+)
+
+// ChartType corresponds to the TS union for chart type.
+type ChartType string
+
+const (
+	ChartTypeBar           ChartType = "bar"
+	ChartTypeBoxAndWhisker ChartType = "box_and_whisker"
+	ChartTypeLine          ChartType = "line"
+	ChartTypePie           ChartType = "pie"
+	ChartTypeScatter       ChartType = "scatter"
+	ChartTypeSuperchart    ChartType = "superchart"
+	ChartTypeUnknown       ChartType = "unknown"
+)
+
+type (
+	// Chart describes a chart and its axes metadata.
+	Chart struct {
+		// The chart elements (data series, points, etc.)
+		Elements []ChartElement `json:"elements"`
+
+		// The type of chart.
+		Type ChartType `json:"type"`
+
+		// The title of the chart.
+		Title *string `json:"title,omitempty"`
+
+		// The label for the x-axis.
+		XLabel *string `json:"x_label,omitempty"`
+
+		// The scale type for the x-axis.
+		XScale *string `json:"x_scale,omitempty"`
+
+		// The labels for the x-axis ticks.
+		XTickLabels []string `json:"x_tick_labels,omitempty"`
+
+		// The tick values for the x-axis.
+		XTicks []float64 `json:"x_ticks,omitempty"`
+
+		// The unit for the x-axis.
+		XUnit *string `json:"x_unit,omitempty"`
+
+		// The label for the y-axis.
+		YLabel *string `json:"y_label,omitempty"`
+
+		// The scale type for the y-axis.
+		YScale *string `json:"y_scale,omitempty"`
+
+		// The labels for the y-axis ticks.
+		YTickLabels []string `json:"y_tick_labels,omitempty"`
+
+		// The tick values for the y-axis.
+		YTicks []float64 `json:"y_ticks,omitempty"`
+
+		// The unit for the y-axis.
+		YUnit *string `json:"y_unit,omitempty"`
+	}
+	// ChartElement represents a single element/series datum inside a Chart.
+	// Optional numerics use *float64 to preserve “absent vs 0”.
+	ChartElement struct {
+		// The label for this chart element.
+		Label string `json:"label"`
+
+		// The angle for this element (e.g., pie slice).
+		Angle *float64 `json:"angle,omitempty"`
+
+		// The first quartile value for this element.
+		FirstQuartile *float64 `json:"first_quartile,omitempty"`
+
+		// The group this element belongs to.
+		Group *string `json:"group,omitempty"`
+
+		// Maximum value.
+		Max *float64 `json:"max,omitempty"`
+
+		// The median value for this element.
+		Median *float64 `json:"median,omitempty"`
+
+		// The minimum value for this element.
+		Min *float64 `json:"min,omitempty"`
+
+		// The outliers for this element.
+		Outliers []float64 `json:"outliers,omitempty"`
+
+		// The points for this element (e.g., scatter: [x,y]).
+		Points [][]float64 `json:"points,omitempty"`
+
+		// The radius for this element.
+		Radius *float64 `json:"radius,omitempty"`
+
+		// The third quartile value for this element.
+		ThirdQuartile *float64 `json:"third_quartile,omitempty"`
+
+		// The value for this element (e.g., bar height).
+		Value *float64 `json:"value,omitempty"`
+	}
+)

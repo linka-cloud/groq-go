@@ -70,7 +70,7 @@ func run(
 	ts := sb.GetTools()
 	ts = append(ts, tools.Tool{
 		Type: tools.ToolTypeFunction,
-		Function: tools.FunctionDefinition{
+		Function: &tools.FunctionDefinition{
 			Name:        "complete",
 			Description: "Signify that the assigned task is complete.",
 			Parameters: tools.FunctionParameters{

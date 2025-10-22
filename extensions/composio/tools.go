@@ -124,7 +124,7 @@ func groqTools(localTools []Tool) []tools.Tool {
 	groqTools := make([]tools.Tool, 0, len(localTools))
 	for _, tool := range localTools {
 		groqTools = append(groqTools, tools.Tool{
-			Function: tools.FunctionDefinition{
+			Function: &tools.FunctionDefinition{
 				Name:        tool.Name,
 				Description: tool.Description,
 				Parameters:  tool.Parameters,

@@ -11,7 +11,7 @@ type (
 		// Type is the type of the tool.
 		Type ToolType `json:"type"`
 		// Function is the tool's functional definition.
-		Function FunctionDefinition `json:"function,omitempty"`
+		Function *FunctionDefinition `json:"function,omitempty"`
 	}
 	// ToolType is the tool type.
 	//
@@ -66,3 +66,15 @@ type (
 		Arguments string `json:"arguments,omitempty"`
 	}
 )
+
+var BuiltIn = struct {
+	BrowserSearch   Tool
+	CodeInterpreter Tool
+}{
+	BrowserSearch: Tool{
+		Type: "browser_search",
+	},
+	CodeInterpreter: Tool{
+		Type: "code_interpreter",
+	},
+}

@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/conneroisu/groq-go/extensions/toolhouse"
 	"github.com/conneroisu/groq-go/internal/test"
 	"github.com/conneroisu/groq-go/pkg/tools"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetTools(t *testing.T) {
@@ -19,7 +20,7 @@ func TestGetTools(t *testing.T) {
 	ts.RegisterHandler("/get_tools", func(w http.ResponseWriter, _ *http.Request) {
 		var ts []tools.Tool
 		ts = append(ts, tools.Tool{
-			Function: tools.FunctionDefinition{
+			Function: &tools.FunctionDefinition{
 				Name:        "tool",
 				Description: "tool",
 				Parameters:  tools.FunctionParameters{},
