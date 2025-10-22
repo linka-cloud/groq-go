@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/conneroisu/groq-go/internal/schema"
 	"github.com/conneroisu/groq-go/internal/streams"
 	"github.com/conneroisu/groq-go/pkg/builders"
 	"github.com/conneroisu/groq-go/pkg/groqerr"
@@ -228,7 +227,7 @@ type ChatResponseFormat struct {
 	Type Format `json:"type,omitempty"`
 	// JSONSchema is the json schema of the chat completion response
 	// format.
-	JSONSchema *JSONSchema `json:"json_schema,omitempty"`
+	JSONSchema any `json:"json_schema,omitempty"`
 }
 
 // ChatMessagePartType is the chat message part type.
@@ -265,7 +264,7 @@ type (
 		Description string `json:"description,omitempty"`
 		// Schema is the schema of the chat completion response format
 		// json schema.
-		Schema schema.Schema `json:"schema"`
+		Schema any `json:"schema"`
 		// Strict determines whether to enforce the schema upon the
 		// generated content.
 		Strict bool `json:"strict"`

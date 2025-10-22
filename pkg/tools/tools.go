@@ -31,21 +31,12 @@ type (
 	}
 	// FunctionDefinition represents the function definition.
 	FunctionDefinition struct {
-		Name        string             `json:"name"`
-		Description string             `json:"description"`
-		Parameters  FunctionParameters `json:"parameters"`
-	}
-	// FunctionParameters represents the function parameters of a tool.
-	FunctionParameters struct {
-		Type                 string                        `json:"type"`
-		Properties           map[string]PropertyDefinition `json:"properties"`
-		Required             []string                      `json:"required"`
-		AdditionalProperties bool                          `json:"additionalProperties,omitempty"`
-	}
-	// PropertyDefinition represents the property definition.
-	PropertyDefinition struct {
-		Type        string `json:"type"`
+		Name        string `json:"name"`
 		Description string `json:"description"`
+		// Parameters is an object describing the function.
+		// You can pass json.RawMessage to describe the schema,
+		// or you can pass in a struct which serializes to the proper JSON schema.
+		Parameters any `json:"parameters"`
 	}
 	// ToolCall represents a tool call.
 	ToolCall struct {
